@@ -1,7 +1,11 @@
-import numpy as np, codecs, json, vocabulary, cPickle as pickle, sys
+import numpy as np, codecs, json, vocabulary, sys
 from datetime import datetime
 from sklearn.cluster import KMeans
 from sklearn.metrics import precision_recall_fscore_support
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 class lda_gibbs_sampling:
     def __init__(self, K=25, alpha=0.5, beta=0.5, docs= None, V= None):
@@ -57,7 +61,7 @@ class lda_gibbs_sampling:
             try:
                 len(doc)
             except:
-                print doc
+                print (doc)
             for t in doc:
                 z = np.random.randint(0, self.K) # Randomly assign a topic to a word. Recall, topics have ids 0 ... K-1. randint: returns integers to [0,K[
                 z_n.append(z)                  # Keep track of the topic assigned 
@@ -125,7 +129,7 @@ def evaluate_clusters(clusters, golden_clusters):
         try: 
             mapping[item][golden_clusters[key]] += 1
         except:
-            print item, key
+            print (item, key)
     for item in range(20):
         #for c in sorted(mapping[item], reverse=True):
         for c in sorted(range(len(mapping[item])), key=lambda k: mapping[item][k], reverse=True):
@@ -152,7 +156,7 @@ def evaluate_clusters(clusters, golden_clusters):
 if __name__ == "__main__":
     st,corpus = datetime.now(), []
     corpus = codecs.open("toy_dataset.txt", 'r', 'utf-8').read().split('\n')
-    print len(corpus), 'Cleaning coprus..'
+    print (len(corpus), 'Cleaning coprus..')
     for key, val in enumerate(corpus):
         if val == '':
             del(corpus[key])   
@@ -165,9 +169,9 @@ if __name__ == "__main__":
     lda = lda_gibbs_sampling(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=docs, V=voca.size())
     for i in range(iterations):
         starting = datetime.now()
-        print "iteration:", i, 
+        print ("iteration:", i,)
         lda.inference()
-        print "Took:", datetime.now() - starting
+        print ("Took:", datetime.now() - starting)
         scores.append(evaluate_clusters(getClustersKmeans(lda.topicdist()), goldenClusters))
     with open('scores.lda.%dtopics.alpha%f.pkl'%int((sys.argv[1]), 0.01), 'w') as out:
         pickle.dump(scores, out )
@@ -179,7 +183,7 @@ if __name__ == "__main__":
             print voca[j],
         print 
     """
-    print "It finished. Total time:", datetime.now()-st
+    print ("It finished. Total time:", datetime.now()-st)
         
         
         

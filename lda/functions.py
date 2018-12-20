@@ -34,7 +34,7 @@ def load_classification_data(path2train, path2labels):
         if classes[v]>5:
             XX.append(X[k])
             yy.append(v)
-    print "Classification problem:\n", len(set(yy)), 'classes.', len(XX), "instances."
+    print ("Classification problem:\n", len(set(yy)), 'classes.', len(XX), "instances.")
     return XX, np.array(yy).astype(int)
 
 
