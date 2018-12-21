@@ -173,7 +173,7 @@ if __name__ == "__main__":
         lda.inference()
         print ("Took:", datetime.now() - starting)
         scores.append(evaluate_clusters(getClustersKmeans(lda.topicdist()), goldenClusters))
-    with open('scores.lda.%dtopics.alpha%f.pkl'%int((sys.argv[1]), 0.01), 'w') as out:
+    with open(('scores.lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'w') as out:
         pickle.dump(scores, out )
     """
     d = lda.worddist()
