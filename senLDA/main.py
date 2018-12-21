@@ -17,7 +17,7 @@ if __name__ == "__main__":
     with codecs.open("E:\\libs\\dphanlp\\1.6.4\\data\\dictionary\\stopwords.txt", 'r', encoding='utf-8') as fin:
         for line in fin.readlines():
             stopWords.add(line.strip())
-    voca = ch_vocabulary_sentenceLayer.CHVocabularySentenceLayer(stopwords=stopWords, customDictionary=customDictionary, customDictionaryOnly=True)
+    voca = ch_vocabulary_sentenceLayer.CHVocabularySentenceLayer(stopwords=stopWords, customDictionary=customDictionary, customDictionaryOnly=False)
 
     with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\food\\data\\mergeResult", 'r', encoding='utf-8') as fin:
         id2StsMap = {}
@@ -39,6 +39,7 @@ if __name__ == "__main__":
             docs.append(doc)
     print(len(docs))
     print("vocab size ", len(voca.vocas))
+    docs = voca.cut_low_freq(docs, 3)
 
     np.random.shuffle(docs)
     trainNum = int(len(docs)*0.9)
@@ -47,7 +48,7 @@ if __name__ == "__main__":
 
     st = datetime.now()
     iterations, scores = 250, []
-    topicNum = int(sys.argv[1])
+    topicNum = 100
     lda = lda_gibbs_sampling1(K=topicNum, alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 
@@ -68,12 +69,12 @@ if __name__ == "__main__":
                 minIter = i
                 noImproveStepNum = 0
                 print("Iteration:", i, "min perplexity:", minValPerpl)
-                with codecs.open(('lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'wb+') as out:
-                    pickle.dump(lda, out)
+                with codecs.open(('lda.%dtopics.pkl' % (int(sys.argv[1]))), 'wb+') as out:
+                    pickle.dump({'lda':lda, 'vocab': voca}, out)
             perpl.append(features[0])
 
             noImproveStepNum += 1
-            if noImproveStepNum>2:
+            if noImproveStepNum>3:
                 break
 
     d = lda.worddist()

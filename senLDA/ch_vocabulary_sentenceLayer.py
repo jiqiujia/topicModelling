@@ -2,7 +2,7 @@
 import jieba
 import numpy as np
 import re
-
+import jieba.posseg as pseg
 
 class CHVocabularySentenceLayer:
     def __init__(self, stopwords, customDictionary, customDictionaryOnly=False):
@@ -19,15 +19,20 @@ class CHVocabularySentenceLayer:
         return w in self.stopwords
 
     def term_to_id(self, term, training):
-        if self.is_stopword(term): return None
-        if self.customDictionaryOnly and term not in self.customDictionary: return None
+        word = term.word
+        if self.is_stopword(word): return None
+        if self.customDictionaryOnly:
+            if word not in self.customDictionary: return None
+        else:
+            if not (term.flag[0]=='n' or term.flag[0]=='v' or term.flag[0]=='a'):
+                return None
         try:
-            term_id = self.vocas_id[term]
+            term_id = self.vocas_id[word]
         except:
             if not training: return None
             term_id = len(self.vocas)
-            self.vocas_id[term] = term_id
-            self.vocas.append(term)
+            self.vocas_id[word] = term_id
+            self.vocas.append(word)
             self.docfreq.append(0)
         return term_id
 
@@ -37,7 +42,7 @@ class CHVocabularySentenceLayer:
         doc_sents = re.split(r'~|，|？|。|！|；|,|\?|\.{2,}|!|;|:|：|\n|\r|——', doc)
         for sentence in doc_sents:
             miniArray = []
-            for term in jieba.cut(sentence):
+            for term in pseg.cut(sentence):
                 id = self.term_to_id(term, training)
                 if id != None:
                     miniArray.append(id)
