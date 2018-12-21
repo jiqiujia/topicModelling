@@ -79,7 +79,7 @@ class VocabularySentenceLayer:
         m = []
         for x in n:
             if x.shape[0] > window:
-                m.extend([x[i:i+window] for i in xrange(0, x.shape[0], window)])
+                m.extend([x[i:i+window] for i in range(0, x.shape[0], window)])
             else:
                 m.append(x)
         return  np.array(m)

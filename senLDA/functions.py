@@ -6,12 +6,12 @@ from nltk.tokenize import sent_tokenize
 from datetime import datetime
 from sklearn import svm, cluster, metrics
 from sklearn.multiclass import OneVsRestClassifier
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 from nltk.stem import WordNetLemmatizer
 from sklearn.datasets import dump_svmlight_file, load_svmlight_file
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.utils import shuffle
 from collections import Counter, defaultdict
 from sklearn import preprocessing
@@ -34,7 +34,7 @@ def load_classification_data(path2train, path2labels):
         if classes[v]>5:
             XX.append(X[k])
             yy.append(v)
-    print "Classification problem:\n", len(set(yy)), 'classes.', len(XX), "instances."
+    print ("Classification problem:\n", len(set(yy)), 'classes.', len(XX), "instances.")
     return XX, np.array(yy).astype(int)
 
 
