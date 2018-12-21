@@ -17,7 +17,7 @@ if __name__ == "__main__":
     with codecs.open("E:\\libs\\dphanlp\\1.6.4\\data\\dictionary\\stopwords.txt", 'r', encoding='utf-8') as fin:
         for line in fin.readlines():
             stopWords.add(line.strip())
-    voca = ch_vocabulary_sentenceLayer.CHVocabularySentenceLayer(stopwords=stopWords, customDictionary=customDictionary, excluds_stopwords=True)
+    voca = ch_vocabulary_sentenceLayer.CHVocabularySentenceLayer(stopwords=stopWords, customDictionary=customDictionary, customDictionaryOnly=True)
 
     with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\food\\data\\mergeResult", 'r', encoding='utf-8') as fin:
         id2StsMap = {}
@@ -46,9 +46,14 @@ if __name__ == "__main__":
     testDocs = docs[trainNum:]
 
     st = datetime.now()
-    iterations, scores = 10, []
-    lda = lda_gibbs_sampling1(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
+    iterations, scores = 250, []
+    topicNum = int(sys.argv[1])
+    lda = lda_gibbs_sampling1(K=topicNum, alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
+
+    minValPerpl = 100000000
+    minIter = 0
+    noImproveStepNum = 0
     for i in range(iterations):
         starting = datetime.now()
         print("iteration:", i, )
@@ -58,16 +63,26 @@ if __name__ == "__main__":
             print ("Iteration:", i, "Perplexity:", lda.perplexity())
             features = lda.heldOutPerplexity(testDocs, 3)
             print("Held-out:", features[0])
+            if features[0] < minValPerpl:
+                minValPerpl = features[0]
+                minIter = i
+                noImproveStepNum = 0
+                print("Iteration:", i, "min perplexity:", minValPerpl)
+                with codecs.open(('lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'wb+') as out:
+                    pickle.dump(lda, out)
             perpl.append(features[0])
-        if iterations%10==0:
-            with codecs.open(('lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'wb+') as out:
-                pickle.dump(lda, out)
+
+            noImproveStepNum += 1
+            if noImproveStepNum>2:
+                break
 
     d = lda.worddist()
-    for i in range(20):
-        ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
-        for j in ind:
-            print (voca[j])
-        print()
+    with codecs.open('topicWords.txt', 'w+', encoding='utf-8') as fout:
+        for i in range(topicNum):
+            ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
+            fout.write('topic %d\n' % i)
+            for j in ind:
+                fout.write(voca[j] + '\n')
+            fout.write('\n')
 
     print("It finished. Total time:", datetime.now() - st)

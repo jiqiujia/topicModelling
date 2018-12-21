@@ -5,11 +5,12 @@ import re
 
 
 class CHVocabularySentenceLayer:
-    def __init__(self, stopwords, customDictionary, excluds_stopwords=False):
+    def __init__(self, stopwords, customDictionary, customDictionaryOnly=False):
         self.vocas = []        # id to word
         self.vocas_id = dict() # word to id
         self.docfreq = []      # id to document frequency
-        self.excluds_stopwords = excluds_stopwords
+        self.customDictionary = customDictionary
+        self.customDictionaryOnly = customDictionaryOnly
         self.stopwords = stopwords
         for word in customDictionary:
             jieba.add_word(word)
@@ -18,7 +19,8 @@ class CHVocabularySentenceLayer:
         return w in self.stopwords
 
     def term_to_id(self, term, training):
-        if self.excluds_stopwords and self.is_stopword(term): return None
+        if self.is_stopword(term): return None
+        if self.customDictionaryOnly and term not in self.customDictionary: return None
         try:
             term_id = self.vocas_id[term]
         except:
