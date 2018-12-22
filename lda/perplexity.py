@@ -1,6 +1,6 @@
 import numpy as np, vocabulary, string, nltk.data, sys, codecs, json, time
 from nltk.tokenize import sent_tokenize
-from lda import lda_gibbs_sampling
+from lda import LDA
 from datetime import datetime
 from sklearn.cross_validation import train_test_split, StratifiedKFold
 from nltk.stem import WordNetLemmatizer
@@ -29,7 +29,7 @@ if __name__ == '__main__':
     final_acc, final_mif, final_perpl, final_ar, final_nmi, final_p, final_r, final_f = [], [], [], [], [], [], [], []
     for j in range(5):
         perpl, cnt, acc, mif, ar, nmi, p, r, f = [], 0, [], [], [], [], [], [], []
-        lda = lda_gibbs_sampling(K=topics, alpha=alpha, beta=beta, docs= ldaTrainingData, V=voca_en.size())
+        lda = LDA(K=topics, alpha=alpha, beta=beta, docs= ldaTrainingData, V=voca_en.size())
         for i in range(iterations):
             lda.inference()
             if i % 5 == 0:

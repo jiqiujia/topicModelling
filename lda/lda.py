@@ -7,8 +7,9 @@ try:
 except:
     import pickle
 
-class lda_gibbs_sampling:
+class LDA:
     def __init__(self, K=25, alpha=0.5, beta=0.5, docs= None, V= None):
+        self.type = 'lda'
         self.K = K
         self.alpha = alpha # parameter of topics prior
         self.beta = beta   # parameter of words prior
@@ -16,9 +17,9 @@ class lda_gibbs_sampling:
         self.V = V # how many different words in the vocabulary i.e., the number of the features of the corpus
         # Definition of the counters 
         self.z_m_n = [] # topic assignements for each of the N words in the corpus. N: total number od words in the corpus (not the vocabulary size).
-        self.n_m_z = np.zeros((len(self.docs), K)) + alpha     # |docs|xK topics: number of words assigned to topic z in document m  
-        self.n_z_t = np.zeros((K, V)) + beta # (K topics) x |V| : number of times a word v is assigned to a topic z 
-        self.n_z = np.zeros(K) + V * beta    # (K,) : overal number of words assigned to a topic z
+        self.n_m_z = np.zeros((len(self.docs), K)) #+ alpha     # |docs|xK topics: number of words assigned to topic z in document m
+        self.n_z_t = np.zeros((K, V)) #+ beta # (K topics) x |V| : number of times a word v is assigned to a topic z
+        self.n_z = np.zeros(K) #+ V * beta    # (K,) : overal number of words assigned to a topic z
 
         self.N = 0
         for m, doc in enumerate(docs):         # Initialization of the data structures I need.
@@ -166,7 +167,7 @@ if __name__ == "__main__":
     goldenClusters = open('toy_labels.txt').read().splitlines()
     goldenClusters =[ int(x) for x in goldenClusters ]
     #lda = lda_gibbs_sampling(K=int(sys.argv[1]), alpha=0.5, beta=0.5, docs=docs, V=voca.size())
-    lda = lda_gibbs_sampling(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=docs, V=voca.size())
+    lda = LDA(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=docs, V=voca.size())
     for i in range(iterations):
         starting = datetime.now()
         print ("iteration:", i,)

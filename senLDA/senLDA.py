@@ -10,10 +10,11 @@ try:
     import cPickle as pickle
 except:
     import pickle
+from lda import LDA
 
-
-class lda_gibbs_sampling1:
+class SenLDA(LDA):
     def __init__(self, K=25, alpha=0.5, beta=0.5, docs=None, V=None):
+        self.type = 'senLDA'
         self.K = K
         self.alpha = alpha  # parameter of topics prior
         self.beta = beta  # parameter of words prior

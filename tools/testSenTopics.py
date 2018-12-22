@@ -5,8 +5,8 @@ import numpy as np
 import io
 
 if __name__ == '__main__':
-    topicNum = 25
-    fh = io.open('lda.25topics.alpha0.0100002.pkl', 'rb')
+    topicNum = 100
+    fh = io.open('../lda/lda.100topics.pkl', 'rb')
     mDict = pickle.load(fh)
     lda = mDict['lda']
     vocab = mDict['vocab']
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 continue
             topicDist = topicDist + lda.n_z_t[:, Id]
         stsTopic = np.argmax(topicDist)
-        stsTopics.append(stsTopic)
+        stsTopics.append((stsTopic, sts))
     print(stsTopics)
 
     fh.close()

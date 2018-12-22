@@ -1,7 +1,6 @@
-import numpy as np, vocabulary_sentenceLayer, string, nltk.data, sys, codecs, json, time
-from nltk.tokenize import sent_tokenize
-from lda_sentenceLayer import lda_gibbs_sampling1
-from nltk.stem import WordNetLemmatizer
+import sys, time
+import vocubulary_sentenceLayer
+from senLDA import lda_gibbs_sampling1
 from functions import *
 
 if __name__ == '__main__':
@@ -11,7 +10,7 @@ if __name__ == '__main__':
     topics = int(sys.argv[2])
     alpha, beta = 0.5 / float(topics), 0.5 / float(topics)
 
-    voca_en = vocabulary_sentenceLayer.VocabularySentenceLayer(set(nltk.corpus.stopwords.words('english')), WordNetLemmatizer(), excluds_stopwords=True)
+    voca_en = vocubulary_sentenceLayer.VocabularySentenceLayer(set(nltk.corpus.stopwords.words('english')), WordNetLemmatizer(), excluds_stopwords=True)
 
     ldaTrainingData = change_raw_2_lda_input(training, voca_en, True)
     ldaTrainingData = voca_en.cut_low_freq(ldaTrainingData, 1)
