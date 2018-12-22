@@ -1,11 +1,11 @@
-import numpy as np, codecs, json, vocabulary, sys
+import numpy as np
 from datetime import datetime
 from sklearn.cluster import KMeans
-from sklearn.metrics import precision_recall_fscore_support
 try:
     import cPickle as pickle
 except:
     import pickle
+import io
 
 class LDA:
     def __init__(self, K=25, alpha=0.5, beta=0.5, docs= None, V= None):
@@ -44,13 +44,54 @@ class LDA:
                 self.n_z_t[z, t] -= 1
                 self.n_z[z] -= 1
                 # sampling topic new_z for t
-                p_z = (self.n_z_t[:, t]+self.beta) * (n_m_z+self.alpha) / (self.n_z + self.V*self.beta)                      # A list of len() = # of topic
-                new_z = np.random.multinomial(1, p_z / p_z.sum()).argmax()   # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
+                p_z = (self.n_z_t[:, t]+self.beta) * (n_m_z+self.alpha) / (self.n_z + self.V*self.beta) # A list of len() = # of topic
+                p_z = p_z / p_z.sum()
+                new_z = np.random.multinomial(1, p_z).argmax()   # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
                 # set z the new topic and increment counters
                 z_n[n] = new_z
                 n_m_z[new_z] += 1
                 self.n_z_t[new_z, t] += 1
                 self.n_z[new_z] += 1
+
+    # TODO:
+    def predict(self, testDocs):
+        res_n_m_z = np.zeros((len(testDocs), self.K))
+        res_z_m_n = []
+        for m, doc in enumerate(testDocs):         # Initialization of the data structures I need.
+            z_n = []
+            for t in doc:
+                z = np.random.randint(0, self.K)
+                res_n_m_z[m, z] += 1
+                z_n.append(z)
+            res_z_m_n.append(np.array(z_n))
+
+        #pre_z_m_n = np.copy(res_z_m_n)
+        res_n_m_zs = []
+        res_z_m_ns = []
+        for i in range(500):
+            for m, doc in enumerate(testDocs):
+                z_n = res_z_m_n[m]
+                n_m_z = res_n_m_z[m]
+                for n, t in enumerate(doc):
+                    z = z_n[n]
+                    n_m_z[z] -= 1
+                    p_z = (self.n_z_t[:, t]+self.beta) * (n_m_z+self.alpha) / (self.n_z + self.V*self.beta) # A list of len() = # of topic
+                    p_z = p_z / p_z.sum()
+                    new_z = np.random.multinomial(1, p_z).argmax()
+                    z_n[n] = new_z
+                    n_m_z[new_z] += 1
+            if i>200 and (i+1)%50==0:
+                res_n_m_zs.append(res_n_m_z)
+                res_z_m_ns.append(res_z_m_n)
+        res_n_m_z = np.zeros((len(testDocs), self.K))
+        for n_m_z in res_n_m_zs:
+            res_n_m_z += n_m_z
+        res_n_m_z = res_n_m_z / len(res_n_m_zs)
+
+        return res_z_m_n, res_n_m_z
+
+
+
     def topicdist(self):
         return self.n_m_z / self.n_m_z.sum(axis=1)[:, np.newaxis]
     
@@ -111,9 +152,14 @@ class LDA:
         return np.exp(log_per / N)
 
     def worddist(self):
-        """get topic-word distribution, \phi in Blei's paper. Returns the distribution of topics and words. (Z topics) x (V words)  """
+        """get topic-word distribution, phi in Blei's paper. Returns the distribution of topics and words. (Z topics) x (V words)  """
         return self.n_z_t / self.n_z[:, np.newaxis]  #Normalize each line (lines are topics), with the number of words assigned to this topics to obtain probs.  *neaxis: Create an array of len = 1
 
+    def dumpDocWordTopics(self, outpath, vocab):
+        with io.open(outpath, 'w+', encoding='utf-8') as fout:
+            for z_n, doc in zip(self.z_m_n, self.docs):
+                line = ['%s:%d' % (vocab.vocabs[wordId], z) for z, wordId in zip(z_n, doc)]
+                fout.write(' '.join(line) + '\n')
 
 def getClustersKmeans(docs):
     kmeans = KMeans(n_clusters=20, n_init=8, max_iter=300, precompute_distances='auto', verbose=0, copy_x=False, n_jobs=3)
@@ -154,37 +200,37 @@ def evaluate_clusters(clusters, golden_clusters):
         
     
 
-if __name__ == "__main__":
-    st,corpus = datetime.now(), []
-    corpus = codecs.open("toy_dataset.txt", 'r', 'utf-8').read().split('\n')
-    print (len(corpus), 'Cleaning coprus..')
-    for key, val in enumerate(corpus):
-        if val == '':
-            del(corpus[key])   
-    iterations, scores = 500, []
-    voca = vocabulary.Vocabulary(excluds_stopwords=False)
-    docs = [voca.doc_to_ids(doc) for doc in corpus]
-    goldenClusters = open('toy_labels.txt').read().splitlines()
-    goldenClusters =[ int(x) for x in goldenClusters ]
-    #lda = lda_gibbs_sampling(K=int(sys.argv[1]), alpha=0.5, beta=0.5, docs=docs, V=voca.size())
-    lda = LDA(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=docs, V=voca.size())
-    for i in range(iterations):
-        starting = datetime.now()
-        print ("iteration:", i,)
-        lda.inference()
-        print ("Took:", datetime.now() - starting)
-        scores.append(evaluate_clusters(getClustersKmeans(lda.topicdist()), goldenClusters))
-    with open(('scores.lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'w') as out:
-        pickle.dump(scores, out )
-    """
-    d = lda.worddist()
-    for i in range(20):
-        ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
-        for j in ind:
-            print voca[j],
-        print 
-    """
-    print ("It finished. Total time:", datetime.now()-st)
+# if __name__ == "__main__":
+#     st,corpus = datetime.now(), []
+#     corpus = codecs.open("toy_dataset.txt", 'r', 'utf-8').read().split('\n')
+#     print (len(corpus), 'Cleaning coprus..')
+#     for key, val in enumerate(corpus):
+#         if val == '':
+#             del(corpus[key])
+#     iterations, scores = 500, []
+#     voca = vocabulary.Vocabulary(excluds_stopwords=False)
+#     docs = [voca.doc_to_ids(doc) for doc in corpus]
+#     goldenClusters = open('toy_labels.txt').read().splitlines()
+#     goldenClusters =[ int(x) for x in goldenClusters ]
+#     #lda = lda_gibbs_sampling(K=int(sys.argv[1]), alpha=0.5, beta=0.5, docs=docs, V=voca.size())
+#     lda = LDA(K=int(sys.argv[1]), alpha=0.01, beta=0.5, docs=docs, V=voca.size())
+#     for i in range(iterations):
+#         starting = datetime.now()
+#         print ("iteration:", i,)
+#         lda.inference()
+#         print ("Took:", datetime.now() - starting)
+#         scores.append(evaluate_clusters(getClustersKmeans(lda.topicdist()), goldenClusters))
+#     with open(('scores.lda.%dtopics.alpha%f.pkl' % (int(sys.argv[1]), 0.01)), 'w') as out:
+#         pickle.dump(scores, out )
+#     """
+#     d = lda.worddist()
+#     for i in range(20):
+#         ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
+#         for j in ind:
+#             print voca[j],
+#         print
+#     """
+#     print ("It finished. Total time:", datetime.now()-st)
         
         
         

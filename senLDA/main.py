@@ -4,12 +4,14 @@ from datetime import datetime
 import pickle
 import codecs
 from vocab import senLDAVocabulary
-from senLDA import lda_gibbs_sampling1
+from senLDA import SenLDA
 import numpy as np
 
 if __name__ == "__main__":
     customDictionary = set()
-    with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\food\\data\\customDictionary.txt", 'r', encoding='utf-8') as fin:
+    category = "food"
+    with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\%s\\data\\customDictionary.txt" % category, 'r',
+                     encoding='utf-8') as fin:
         for line in fin.readlines():
             customDictionary.add(line.strip())
 
@@ -17,9 +19,10 @@ if __name__ == "__main__":
     with codecs.open("E:\\libs\\dphanlp\\1.6.4\\data\\dictionary\\stopwords.txt", 'r', encoding='utf-8') as fin:
         for line in fin.readlines():
             stopWords.add(line.strip())
-    voca = senLDAVocabulary.SenLDASentenceLayer(stopwords=stopWords, customDictionary=customDictionary, customDictionaryOnly=False)
+    voca = senLDAVocabulary.SenLDAVocabulary(stopwords=stopWords, customDictionary=customDictionary, customDictionaryOnly=False)
 
-    with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\food\\data\\mergeResult", 'r', encoding='utf-8') as fin:
+    with codecs.open("E:\\projects\\AiProductDescWriter\\server_data\\%s\\data\\mergeResult" % category, 'r',
+                     encoding='utf-8') as fin:
         id2StsMap = {}
         for line in fin.readlines():
             line = line.split("\t")
@@ -33,13 +36,16 @@ if __name__ == "__main__":
     print(len(id2StsMap))
     docs = []
     for key, value in id2StsMap.items():
-        if len(value)>2:
+        if len(value) > 2:
             str = ','.join(value)
             doc = np.array(voca.doc_to_ids(doc=str, training=True), dtype=object)
             docs.append(doc)
     print(len(docs))
-    print("vocab size ", len(voca.vocas))
+    print("vocab size ", len(voca.vocabs))
     docs = voca.cut_low_freq(docs, 3)
+    print("vocab size after cut ", len(voca.vocabs))
+
+    voca.dump_vocabulary('../model/%sLDAVocabulary.txt' % category)
 
     np.random.shuffle(docs)
     trainNum = int(len(docs)*0.9)
@@ -49,7 +55,7 @@ if __name__ == "__main__":
     st = datetime.now()
     iterations, scores = 250, []
     topicNum = 100
-    lda = lda_gibbs_sampling1(K=topicNum, alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
+    lda = SenLDA(K=topicNum, alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 
     minValPerpl = 100000000
@@ -69,7 +75,7 @@ if __name__ == "__main__":
                 minIter = i
                 noImproveStepNum = 0
                 print("Iteration:", i, "min perplexity:", minValPerpl)
-                with codecs.open(('../model/senLDA.%dtopics.pkl' % (int(sys.argv[1]))), 'wb+') as out:
+                with codecs.open(('../model/senLDA.%dtopics.pkl' % topicNum), 'wb+') as out:
                     pickle.dump({'lda':lda, 'vocab': voca}, out)
             perpl.append(features[0])
 

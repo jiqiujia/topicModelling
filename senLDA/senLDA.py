@@ -4,7 +4,7 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import precision_recall_fscore_support
 from collections import Counter
 import warnings
-
+import io
 warnings.filterwarnings("error")
 try:
     import cPickle as pickle
@@ -14,6 +14,7 @@ from lda import LDA
 
 class SenLDA(LDA):
     def __init__(self, K=25, alpha=0.5, beta=0.5, docs=None, V=None):
+        #LDA.__init__(self)
         self.type = 'senLDA'
         self.K = K
         self.alpha = alpha  # parameter of topics prior

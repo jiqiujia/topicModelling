@@ -43,7 +43,7 @@ if __name__ == "__main__":
     docs = voca.cut_low_freq(docs, 3)
     print("vocab size after cut ", len(voca.vocabs))
 
-    voca.dump_vocabulary('../model/ldaVocabulary.txt')
+    voca.dump_vocabulary('../model/%sLDAVocabulary.txt' % category)
 
     np.random.shuffle(docs)
     trainNum = int(len(docs)*0.9)
@@ -73,8 +73,8 @@ if __name__ == "__main__":
                 minIter = i
                 noImproveStepNum = 0
                 print("Iteration:", i, "min perplexity:", minValPerpl)
-                #with codecs.open(('lda.%dtopics.pkl' % (topicNum)), 'wb+') as out:
-                #    pickle.dump({'lda':lda, 'vocab': voca}, out)
+                with codecs.open(('../model/lda.%dtopics.pkl' % (topicNum)), 'wb+') as out:
+                    pickle.dump({'lda':lda, 'vocab': voca}, out)
                 dumpLDAModel(lda, '../model/{}_{}_{}.model'.format(category, lda.type, lda.K))
             perpl.append(features[0])
 

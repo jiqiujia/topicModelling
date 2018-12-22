@@ -6,7 +6,7 @@ import jieba.posseg as pseg
 from vocab.my_vocabulary import Vocabulary
 
 class LDAVocabulary(Vocabulary):
-    def __init__(self, stopwords, customDictionary, customDictionaryOnly=False):
+    def __init__(self, stopwords=None, customDictionary=None, customDictionaryOnly=False):
         Vocabulary.__init__(self, stopwords, customDictionary, customDictionaryOnly)
 
     def is_stopword(self, w):
@@ -54,3 +54,14 @@ class LDAVocabulary(Vocabulary):
 
     def size(self):
         return len(self.vocabs)
+
+    def convert_docs2id(self, docs):
+        docIds = []
+        for doc in docs:
+            ids = []
+            words = jieba.cut(doc)
+            for word in words:
+                if word in self.vocab2id:
+                    ids.append(self.vocab2id[word])
+            docIds.append(ids)
+        return docIds

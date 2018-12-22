@@ -6,9 +6,9 @@ import jieba.posseg as pseg
 from vocab.my_vocabulary import Vocabulary
 
 
-class SenLDASentenceLayer(Vocabulary):
+class SenLDAVocabulary(Vocabulary):
     def __init__(self, stopwords, customDictionary, customDictionaryOnly=False):
-        Vocabulary.__init__(stopwords, customDictionary, customDictionaryOnly)
+        Vocabulary.__init__(self, stopwords, customDictionary, customDictionaryOnly)
 
     def doc_to_ids(self, doc, training=True):
         l = []

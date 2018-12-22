@@ -78,6 +78,3 @@ class Vocabulary:
     def size(self):
         return len(self.vocas)
 
-    def is_stopword_id(self, id):
-        return self.vocas[id] in stopwords_list
-

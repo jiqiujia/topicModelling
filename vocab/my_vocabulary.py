@@ -5,8 +5,10 @@ import re
 import jieba.posseg as pseg
 import io
 
+
 class Vocabulary:
-    def __init__(self, stopwords, customDictionary, customDictionaryOnly=False):
+
+    def __init__(self, stopwords=None, customDictionary=None, customDictionaryOnly=False):
         self.vocabs = []        # id to word
         self.vocab2id = dict() # word to id
         self.docfreq = []      # id to document frequency
@@ -47,3 +49,12 @@ class Vocabulary:
         with io.open(path, 'w+', encoding='utf-8') as fout:
             for id, (word, docFreq) in enumerate(zip(self.vocabs, self.docfreq)):
                 fout.write('%d\t%s\t%d\n' % (id, word, docFreq))
+
+    def load_vocabulary(self, path):
+        with io.open(path, 'r', encoding='utf-8') as fin:
+            lines = fin.readlines()
+            for line in lines:
+                line = line.split('\t')
+                self.vocab2id[int(line[0])] = line[1]
+
+
