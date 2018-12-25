@@ -96,7 +96,7 @@ class LDA:
         return self.n_m_z / self.n_m_z.sum(axis=1)[:, np.newaxis]
     
     def heldOutPerplexity(self, docs, iterations):
-        N, log_per, z_m_n = 0, 0, []
+        z_m_n = []
         n_m_z1, n_z_t, n_z = (np.zeros((len(docs), self.K)) + self.alpha), (np.zeros((self.K, self.V)) + self.beta), np.zeros(self.K)
         for m, doc in enumerate(docs):         # Initialization of the data structures I need.
             z_n = []
@@ -128,15 +128,9 @@ class LDA:
                     n_z_t[new_z, t] += 1
                     n_z[new_z] += 1
     
-        phi = self.worddist()
-        Kalpha = self.K * self.alpha
-        for m, doc in enumerate(docs):
-            theta = n_m_z1[m] / (len(doc) + Kalpha)
-            for w in doc:
-                log_per -= np.log(np.inner(phi[:,w], theta))
-            N += len(doc)
+        perplexity = self.perplexity()
         topicDist = n_m_z1 / n_m_z1.sum(axis=1)[:, np.newaxis]
-        return np.exp(log_per / N), topicDist
+        return perplexity, topicDist
 
 
     def perplexity(self):

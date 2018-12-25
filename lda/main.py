@@ -65,7 +65,7 @@ if __name__ == "__main__":
         print("iteration:", i, )
         lda.inference()
         print("Took:", datetime.now() - starting)
-        if i % 5 == 0:
+        if (i+1) % 5 == 0:
             print ("Iteration:", i, "Perplexity:", lda.perplexity())
             features = lda.heldOutPerplexity(testDocs, 3)
             print("Held-out:", features[0])

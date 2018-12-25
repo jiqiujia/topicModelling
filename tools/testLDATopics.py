@@ -7,6 +7,7 @@ import pickle
 import numpy as np
 from tools.utils import dumpTopicWords
 from tools.topicMerger import TopicModelMerge
+from tools.hanlpsegment import HanlpStandardTokenizer
 
 
 if __name__ == '__main__':
@@ -22,6 +23,8 @@ if __name__ == '__main__':
     mDict = pickle.load(fh)
     lda = mDict['lda']
     vocab = mDict['vocab']
+    vocab.segmentor = HanlpStandardTokenizer("-Djava.class.path=.;../hanlp-1.7.1.jar;E:/dlprojects/topicModelling")
+    vocab.segmentor.add_custom_words(vocab.customDictionary)
     print(len(vocab.vocabs))
 
     for word in vocab.vocab2id.keys():
