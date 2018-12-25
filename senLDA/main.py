@@ -59,6 +59,7 @@ if __name__ == "__main__":
     lda = SenLDA(K=topicNum, alpha=0.01, beta=0.5, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 
+    voca.segmentor = None
     minValPerpl = 100000000
     minIter = 0
     noImproveStepNum = 0

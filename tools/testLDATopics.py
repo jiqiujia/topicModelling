@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from tools.utils import loadLDAModel
 from vocab.ldaVocabulary import LDAVocabulary
-import jieba
 import io
 import pickle
 import numpy as np
@@ -26,9 +25,6 @@ if __name__ == '__main__':
     vocab.segmentor = HanlpStandardTokenizer("-Djava.class.path=.;../hanlp-1.7.1.jar;E:/dlprojects/topicModelling")
     vocab.segmentor.add_custom_words(vocab.customDictionary)
     print(len(vocab.vocabs))
-
-    for word in vocab.vocab2id.keys():
-        jieba.add_word(word)
 
     dumpTopicWords('ldaTopicWords%d.txt' % topicNum, lda, vocab, 15)
     lda.dumpDocWordTopics('docWordTopics%d.txt' % topicNum, vocab)

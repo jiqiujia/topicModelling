@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import jieba
 import numpy as np
 import re
-import jieba.posseg as pseg
 from vocab.my_vocabulary import Vocabulary
 
 

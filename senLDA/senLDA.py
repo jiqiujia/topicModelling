@@ -75,16 +75,10 @@ class SenLDA(LDA):
                     n_m_z[new_z] += 1
                     n_z_t[new_z, sentence.astype(dtype=np.int32)] += 1
                     n_z[new_z] += len(sentence)
-        phi = self.worddist()
-        Kalpha = self.K * self.alpha
-        for m, doc in enumerate(docs):
-            theta = n_m_z1[m] / (len(doc) + Kalpha)
-            for sen in doc:
-                for w in sen:
-                    log_per -= np.log(np.inner(phi[:, w], theta))
-                N += len(sen)
+
+        perplexity = self.perplexity()
         topicDist = n_m_z1 / n_m_z1.sum(axis=1)[:, np.newaxis]
-        return np.exp(log_per / N), topicDist
+        return perplexity, topicDist
 
     # 原来用的是np.float128，但是win平台上不支持，所以改成了np.float64
     # 但是不能使用np.float32，这将会导致精度不够，prodall因为连乘变成0
@@ -123,12 +117,6 @@ class SenLDA(LDA):
             print (prodall1.shape, prodall1)
             print (prodall.shape, prodall)
             assert False
-        # p_z /= np.sum(p_z)
-        #        except RuntimeWarning:
-        #            print 'Exception'
-        #            print prodall
-        #            print right
-        #            print self.n_z_t[:,key]
         return p_z.astype(np.float64)
 
     def inference(self):
