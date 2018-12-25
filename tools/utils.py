@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from lda import LDA
 import io
+import numpy as np
 
 def loadStopWords(stopword_file):
     pass
@@ -33,3 +34,14 @@ def loadLDAModel(word_topic_file):
                 topic_word[topic_id].append((word_id, cnt))
                 topic_sum[topic_id] += cnt
     return topic_word, topic_sum
+
+def dumpTopicWords(outPath, lda, vocab, topk):
+    d = lda.worddist()
+    d = d * np.log(len(lda.docs) * 1.0 / np.asarray(vocab.docfreq))
+    with io.open(outPath, 'w+', encoding='utf-8') as fout:
+        for i in range(lda.K):
+            ind = np.argpartition(d[i], -topk)[-topk:]  # an array with the indexes of the 10 words with the highest probabilitity in the topic
+            fout.write('topic %d\n' % i)
+            for j in ind:
+                fout.write(vocab[j] + '\n')
+            fout.write('\n')

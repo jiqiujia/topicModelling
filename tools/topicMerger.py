@@ -18,18 +18,20 @@ class TopicModelMerge(object):
         _word_topic_file: 主题模型文件
     """
 
-    def __init__(self, model_dir, conf_file):
-        """
-        通过传进来配置文件初始化参数
-
-        Args:
-            model_dir: 模型目录
-            conf_file: 模型配置文件
-        """
-        parameters = self.config_parser(model_dir + '/' + conf_file)
-        self._num_topics = int(parameters["num_topics"])
-        self._word_topic_file = model_dir + '/' + parameters["word_topic_file"].strip('"')
-
+    # def __init__(self, model_dir, conf_file):
+    #     """
+    #     通过传进来配置文件初始化参数
+    #
+    #     Args:
+    #         model_dir: 模型目录
+    #         conf_file: 模型配置文件
+    #     """
+    #     parameters = self.config_parser(model_dir + '/' + conf_file)
+    #     self._num_topics = int(parameters["num_topics"])
+    #     self._word_topic_file = model_dir + '/' + parameters["word_topic_file"].strip('"')
+    def __init__(self, num_topics, word_topic_file):
+        self._num_topics = num_topics
+        self._word_topic_file = word_topic_file
 
     def conv_topic_word(self):
         """
@@ -179,7 +181,7 @@ class TopicModelMerge(object):
                         if word in overlap_set and min_value[word] > prob:
                             min_value[word] = prob
                     w_inter = 0.0
-                    for prob in min_value.itervalues():
+                    for prob in min_value.values():
                         w_inter += prob
                     overlap = w_inter / (w_union - w_inter)
                 # 添加高于阈值的主题对
@@ -193,9 +195,12 @@ class TopicModelMerge(object):
         print("Merge {} redundant topics into {} topics (sets).".format(
                 redundant_topic_cnt, len(dis_sets)))
         # 对属于同一类的主题进行合并
+        topicMap = {}
         for index in range(len(dis_sets)):
             current_list = list(dis_sets[index])
+            topicMap[current_list[0]] = current_list[0]
             for topic_id in current_list[1:]:
+                topicMap[topic_id] = current_list[0]
                 topic_word[current_list[0]] += topic_word[topic_id]
                 topic_word[topic_id] = []
 
@@ -217,4 +222,6 @@ class TopicModelMerge(object):
         for word_id in word_topic.keys():
             out_file.writelines("{} {}\n".format(word_id, ' '.join(word_topic[word_id])))
         out_file.close()
+
+        return topicMap, topic_word
 

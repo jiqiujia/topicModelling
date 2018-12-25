@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import jieba
-import numpy as np
-import re
-import jieba.posseg as pseg
 from vocab.my_vocabulary import Vocabulary
+from tools.hanlpsegment import HanlpStandardTokenizer
 
 class LDAVocabulary(Vocabulary):
     def __init__(self, stopwords=None, customDictionary=None, customDictionaryOnly=False):
@@ -15,7 +12,7 @@ class LDAVocabulary(Vocabulary):
     def doc_to_ids(self, doc, training=True):
         l = []
         words = dict()
-        for term in pseg.cut(doc):
+        for term in self.segmentor.cut_with_nature(doc, False):
             id = self.term_to_id(term, training)
             if id is not None:
                 l.append(id)
@@ -59,7 +56,7 @@ class LDAVocabulary(Vocabulary):
         docIds = []
         for doc in docs:
             ids = []
-            words = jieba.cut(doc)
+            words = self.segmentor.cut(doc)
             for word in words:
                 if word in self.vocab2id:
                     ids.append(self.vocab2id[word])

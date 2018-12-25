@@ -1,3 +1,4 @@
+from __future__ import unicode_literals, print_function
 import numpy as np, codecs, json, sys
 from datetime import datetime
 from sklearn.cluster import KMeans
@@ -24,10 +25,10 @@ class SenLDA(LDA):
         # Definition of the counters 
         self.z_m_n = []  # topic assignements for each of the N words in the corpus. N: total number of words in the corpus (not the vocabulary size).
         self.n_m_z = np.zeros((len(self.docs), K),
-                              dtype=np.float64) + alpha  # |docs|xK topics: number of sentences assigned to topic z in document m
+                              dtype=np.float64) #+ alpha  # |docs|xK topics: number of sentences assigned to topic z in document m
         self.n_z_t = np.zeros((K, V),
-                              dtype=np.float64) + beta  # (K topics) x |V| : number of times a word v is assigned to a topic z
-        self.n_z = np.zeros(K) + V * beta  # (K,) : overal number of words assigned to a topic z
+                              dtype=np.float64) #+ beta  # (K topics) x |V| : number of times a word v is assigned to a topic z
+        self.n_z = np.zeros(K) #+ V * beta  # (K,) : overal number of words assigned to a topic z
         self.N = 0
         for m, doc in enumerate(docs):  # Initialization of the data structures I need.
             z_n = []
@@ -171,3 +172,10 @@ class SenLDA(LDA):
         """get topic-word distribution, \phi in Blei's paper. Returns the distribution of topics and words. (Z topics) x (V words)  """
         return self.n_z_t / self.n_z[:,
                             np.newaxis]  # Normalize each line (lines are topics), with the number of words assigned to this topics to obtain probs.  *neaxis: Create an array of len = 1
+
+    def dumpDocWordTopics(self, outpath, vocab):
+        with io.open(outpath, 'w+', encoding='utf-8') as fout:
+            for z_n, doc in zip(self.z_m_n, self.docs):
+                doc = [w for sublist in doc for w in sublist]
+                line = ['%s:%d' % (vocab.vocabs[wordId], z) for z, wordId in zip(z_n, doc)]
+                fout.write(' '.join(line) + '\n')

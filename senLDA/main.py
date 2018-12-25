@@ -6,6 +6,7 @@ import codecs
 from vocab import senLDAVocabulary
 from senLDA import SenLDA
 import numpy as np
+from tools.utils import dumpTopicWords
 
 if __name__ == "__main__":
     customDictionary = set()
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     docs = voca.cut_low_freq(docs, 3)
     print("vocab size after cut ", len(voca.vocabs))
 
-    voca.dump_vocabulary('../model/%sLDAVocabulary.txt' % category)
+    voca.dump_vocabulary('../model/%sSenLDAVocabulary.txt' % category)
 
     np.random.shuffle(docs)
     trainNum = int(len(docs)*0.9)
@@ -83,13 +84,6 @@ if __name__ == "__main__":
             if noImproveStepNum>3:
                 break
 
-    d = lda.worddist()
-    with codecs.open('topicWords.txt', 'w+', encoding='utf-8') as fout:
-        for i in range(topicNum):
-            ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
-            fout.write('topic %d\n' % i)
-            for j in ind:
-                fout.write(voca[j] + '\n')
-            fout.write('\n')
+    dumpTopicWords('topicWords.txt', lda, voca, 15)
 
     print("It finished. Total time:", datetime.now() - st)

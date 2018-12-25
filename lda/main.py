@@ -5,7 +5,7 @@ import codecs
 from vocab.ldaVocabulary import LDAVocabulary
 from lda import LDA
 import numpy as np
-from tools.utils import dumpLDAModel
+from tools.utils import dumpLDAModel, dumpTopicWords
 
 if __name__ == "__main__":
     customDictionary = set()
@@ -51,14 +51,15 @@ if __name__ == "__main__":
     testDocs = docs[trainNum:]
 
     st = datetime.now()
-    iterations, scores = 250, []
+    iterations, scores = 2500, []
     topicNum = 100
-    lda = LDA(K=topicNum, alpha=0.1, beta=0.01, docs=trainDocs, V=voca.size())
+    lda = LDA(K=topicNum, alpha=0.5, beta=0.01, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 
     minValPerpl = 100000000
     minIter = 0
     noImproveStepNum = 0
+    voca.segmentor = None
     for i in range(iterations):
         starting = datetime.now()
         print("iteration:", i, )
@@ -82,13 +83,6 @@ if __name__ == "__main__":
             if noImproveStepNum>3:
                 break
 
-    d = lda.worddist()
-    with codecs.open('ldaTopicWords.txt', 'w+', encoding='utf-8') as fout:
-        for i in range(topicNum):
-            ind = np.argpartition(d[i], -15)[-15:] # an array with the indexes of the 10 words with the highest probabilitity in the topic
-            fout.write('topic %d\n' % i)
-            for j in ind:
-                fout.write(voca[j] + '\n')
-            fout.write('\n')
+    dumpTopicWords('topicWords.txt', lda, voca, 15)
 
     print("It finished. Total time:", datetime.now() - st)

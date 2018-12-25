@@ -1,4 +1,4 @@
-import numpy as np, codecs, json,  cPickle as pickle, sys, random, itertools
+import numpy as np, codecs, json, sys, random, itertools
 from datetime import datetime
 from sklearn import preprocessing
 from sklearn.cluster import KMeans
@@ -7,6 +7,10 @@ from collections import Counter
 from rpy2.robjects.packages import importr
 import rpy2.robjects as robjects
 utils = importr("copula")
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 class lda_gibbs_sampling_copula:
     def __init__(self, K=25, alpha=0.5, beta=0.5, copulaFamily="Frank", docs= None, V= None, copula_parameter=2):

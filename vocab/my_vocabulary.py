@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import jieba
-import numpy as np
-import re
-import jieba.posseg as pseg
 import io
 
+from tools.hanlpsegment import HanlpStandardTokenizer
 
 class Vocabulary:
 
@@ -15,8 +12,8 @@ class Vocabulary:
         self.customDictionary = customDictionary
         self.customDictionaryOnly = customDictionaryOnly
         self.stopwords = stopwords
-        for word in customDictionary:
-            jieba.add_word(word)
+        self.segmentor = HanlpStandardTokenizer("-Djava.class.path=.;../hanlp-1.7.1.jar;E:/dlprojects/topicModelling")
+        self.segmentor.add_custom_words(customDictionary)
 
     def is_stopword(self, w):
         return w in self.stopwords
@@ -27,8 +24,9 @@ class Vocabulary:
         if self.customDictionaryOnly:
             if word not in self.customDictionary: return None
         else:
-            if not (term.flag[0]=='n' or term.flag[0]=='v' or term.flag[0]=='a'):
-                return None
+            pass
+            # if not (term.flag[0]=='n' or term.flag[0]=='v' or term.flag[0]=='a'):
+            #     return None
         try:
             term_id = self.vocab2id[word]
         except:

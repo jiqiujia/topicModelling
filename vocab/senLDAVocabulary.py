@@ -16,7 +16,7 @@ class SenLDAVocabulary(Vocabulary):
         doc_sents = re.split(r'~|，|？|。|！|；|,|\?|\.{2,}|!|;|:|：|\n|\r|——', doc)
         for sentence in doc_sents:
             miniArray = []
-            for term in pseg.cut(sentence):
+            for term in self.segmentor.cut_with_nature(sentence):
                 id = self.term_to_id(term, training)
                 if id != None:
                     miniArray.append(id)
