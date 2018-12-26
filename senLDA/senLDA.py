@@ -76,7 +76,7 @@ class SenLDA(LDA):
                     n_z_t[new_z, sentence.astype(dtype=np.int32)] += 1
                     n_z[new_z] += len(sentence)
 
-        perplexity = self.perplexity()
+        perplexity = self.perplexity(n_m_z1, n_z)
         topicDist = n_m_z1 / n_m_z1.sum(axis=1)[:, np.newaxis]
         return perplexity, topicDist
 
@@ -108,6 +108,12 @@ class SenLDA(LDA):
 
         right = (n_m_z[m, :] + self.alpha)
         p_z = prodall * right
+        print('#################')
+        print(m, len(sentence), sentence)
+        print(p_z)
+        print(right, n_m_z.shape)
+        print(prodall1.shape, prodall1)
+        print(prodall.shape, prodall)
         try:
             p_z /= np.sum(p_z)
         except:
@@ -142,24 +148,21 @@ class SenLDA(LDA):
     def topicdist(self):
         return self.n_m_z / self.n_m_z.sum(axis=1)[:, np.newaxis]
 
-    def perplexity(self, docs=None):
-        if docs == None: docs = self.docs
-        phi = self.worddist()
+    def perplexity(self, docs = None, n_m_z=None, n_z = None):
+        if docs is None: docs = self.docs
+        if n_m_z is None: n_m_z = self.n_m_z
+        if n_z is None: n_z = self.n_z
+        phi = self.worddist(self.n_z_t, n_z)
         log_per = 0
         N = 0
         Kalpha = self.K * self.alpha
         for m, doc in enumerate(docs):
-            theta = self.n_m_z[m] / (len(doc) + Kalpha)
+            theta = n_m_z[m] / (len(doc) + Kalpha)
             for sen in doc:
                 for w in sen:
                     log_per -= np.log(np.inner(phi[:, w], theta))
                 N += len(sen)
         return np.exp(log_per / N)
-
-    def worddist(self):
-        """get topic-word distribution, \phi in Blei's paper. Returns the distribution of topics and words. (Z topics) x (V words)  """
-        return self.n_z_t / self.n_z[:,
-                            np.newaxis]  # Normalize each line (lines are topics), with the number of words assigned to this topics to obtain probs.  *neaxis: Create an array of len = 1
 
     def dumpDocWordTopics(self, outpath, vocab):
         with io.open(outpath, 'w+', encoding='utf-8') as fout:

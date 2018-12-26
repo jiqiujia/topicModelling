@@ -4,7 +4,7 @@ from datetime import datetime
 import pickle
 import codecs
 from vocab import senLDAVocabulary
-from senLDA import SenLDA
+from senLDAV2 import SenLDAV2
 import numpy as np
 from tools.utils import dumpTopicWords
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     docs = voca.cut_low_freq(docs, 3)
     print("vocab size after cut ", len(voca.vocabs))
 
-    voca.dump_vocabulary('../model/%sSenLDAVocabulary.txt' % category)
+    voca.dump_vocabulary('../model/%sSenLDAV2Vocabulary.txt' % category)
 
     np.random.shuffle(docs)
     trainNum = int(len(docs)*0.9)
@@ -55,8 +55,13 @@ if __name__ == "__main__":
 
     st = datetime.now()
     iterations, scores = 250, []
+    stsTopicNum = 25
     topicNum = 100
-    lda = SenLDA(K=topicNum, alpha=50.0/topicNum, beta=0.5, docs=trainDocs, V=voca.size())
+    alpha = 0.6433 / stsTopicNum
+    beta = 1.64*1e-4 * stsTopicNum + 1.4528713 / topicNum
+    gamma = 5.276*1e-5 * stsTopicNum + 0.2156 / topicNum
+    print(alpha, beta, gamma)
+    lda = SenLDAV2(SK=stsTopicNum, K=topicNum, alpha=alpha, beta=beta, gamma=gamma, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 
     voca.segmentor = None
@@ -77,7 +82,7 @@ if __name__ == "__main__":
                 minIter = i
                 noImproveStepNum = 0
                 print("Iteration:", i, "min perplexity:", minValPerpl)
-                with codecs.open(('../model/senLDA.%dtopics.pkl' % topicNum), 'wb+') as out:
+                with codecs.open(('../model/senLDAV2.%dtopics.pkl' % topicNum), 'wb+') as out:
                     pickle.dump({'lda':lda, 'vocab': voca}, out)
             perpl.append(features[0])
 
