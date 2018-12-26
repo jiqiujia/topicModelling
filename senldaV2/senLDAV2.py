@@ -30,8 +30,8 @@ class SenLDAV2(SenLDA):
         self.V = V  # how many different words in the vocabulary i.e., the number of the features of the corpus
         # Definition of the counters
         self.z_m_s = []  # topic assignments for each of the S sentences in the corpus
-        self.n_s_z = np.zeros((self.SK, self.K))
-        self.n_m_s = np.zeros((len(self.docs), self.SK))
+        self.n_s_z = np.zeros((self.SK, self.K), dtype=np.float64)
+        self.n_m_s = np.zeros((len(self.docs), self.SK), dtype=np.float64)
         self.n_s = np.zeros(self.SK)  # overall number of words assigned to sentence topic s
 
         self.z_m_n = []  # topic assignments for each of the N words in the corpus: list of list
@@ -62,14 +62,11 @@ class SenLDAV2(SenLDA):
                 z_ns))  # update the array that keeps track of the topic assignements in the words of the corpus.
             self.z_m_s.append(np.array(z_s))
 
-    def get_sts_full_conditional(self, sentence, m, sz, z_n, n_m_s):
+    def get_sts_full_conditional(self, sentence, m, zdict, n_m_s):
         prod_nom, prod_den = [], []  # numerator, denominator
-        zdict = Counter(z_n)
         for z, znum in zdict.items():
-            self.n_s_z[sz, z] -= znum
             for x in range(znum):
                 prod_nom.append(self.gamma + self.n_s_z[:, z] + x)
-            self.n_s_z[sz, z] += znum
         prod_nom = np.array(prod_nom, dtype=np.float64)
 
         left_denominator = self.n_s + self.beta * self.K
@@ -110,9 +107,11 @@ class SenLDAV2(SenLDA):
                     self.n_s_z[sz, z] -= 1
                     p_z = ((self.n_z_t[:, t] + self.beta) * (self.n_s_z[sz, :] + self.gamma) / (
                                 self.n_z + self.V * self.beta))
+                    # print(np.sum(self.n_s_z<0))
+                    # print(np.sum(self.n_z_t<0))
+                    # print(np.sum(self.n_z)<0)
                     p_z = p_z / p_z.sum()
-                    new_z = np.random.multinomial(1,
-                                                  p_z).argmax()  # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
+                    new_z = np.random.multinomial(1, p_z).argmax()  # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
                     # set z the new topic and increment counters
                     z_n[sid][n] = new_z
                     n_m_z[new_z] += 1
@@ -122,8 +121,19 @@ class SenLDAV2(SenLDA):
                 # 先对词采样，再对句子采样，不确定这样子实现对不对
                 n_m_s[sz] -= 1
                 self.n_s[sz] -= len(sentence)
-                p_sz = self.get_sts_full_conditional(sentence, m, sz, z_n[sid], n_m_s)
-                new_sz = np.random.multinomial(1, p_sz).argmax()
+                zdict = Counter(z_n[sid])
+                for z, znum in zdict.items():
+                    self.n_s_z[sz, z] -= znum
+                p_sz = self.get_sts_full_conditional(sentence, m, zdict, n_m_s)
+                try:
+                    new_sz = np.random.multinomial(1, p_sz).argmax()
+                except:
+                    print(np.sum(self.n_s_z<0))
+                    print(np.sum(self.n_s<0))
+                    print(np.sum(n_m_s<0))
+                    assert False
+                for z, znum in zdict.items():
+                    self.n_s_z[new_sz, z] += znum
                 z_s[sid] = new_sz
                 n_m_s[new_sz] += 1
                 self.n_s[new_sz] += len(sentence)
@@ -182,28 +192,29 @@ class SenLDAV2(SenLDA):
                         z = z_n[sid][n]
                         n_m_z1[z] -= 1
                         n_z[z] -= 1  # Decrease the total number of words assigned to topic z
-                        p_z = self.n_z_t[:, t] * self.n_s_z[sz, :] / n_z
+                        p_z = ((self.n_z_t[:, t] + self.beta) * (self.n_s_z[sz, :] + self.gamma) / (
+                                n_z + self.V * self.beta))
                         try:
                             p_z = p_z / p_z.sum()
                         except:
                             print(p_z)
                             print(n_z)
-                        new_z = np.random.multinomial(1,
-                                                      p_z).argmax()  # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
+                            assert False
+                        # One multinomial draw, for a distribution over topics, with probabilities summing to 1, return the index of the topic selected.
+                        new_z = np.random.multinomial(1, p_z).argmax()
                         # set z the new topic and increment counters
                         z_n[sid][n] = new_z
                         n_m_z1[new_z] += 1
                         n_z[new_z] += 1
-                    # 先对词采样，再对句子采样，不确定这样子实现对不对
+                    # 先对词采样，再对句子采样
                     n_m_s1[sz] -= 1
                     n_s[sz] -= len(sentence)
                     prod_nom, prod_den = [], []  # numerator, denominator
                     zdict = Counter(z_n[sid])
                     for z, znum in zdict.items():
-                        self.n_s_z[sz, z] -= znum
+                        # self.n_s_z[sz, z] -= znum
                         for x in range(znum):
                             prod_nom.append(self.gamma + self.n_s_z[:, z] + x)
-                        self.n_s_z[sz, z] += znum
                     prod_nom = np.array(prod_nom, dtype=np.float64)
 
                     left_denominator = n_s + self.beta * self.K
@@ -226,6 +237,8 @@ class SenLDAV2(SenLDA):
                         print(prodall1.shape, prodall1)
                         print(prodall.shape, prodall)
                         assert False
+                    # for z, znum in zdict.items():
+                    #     self.n_s_z[new_sz, z] += znum
                     z_s[sid] = new_sz
                     n_m_s1[new_sz] += 1
                     n_s[new_sz] += len(sentence)

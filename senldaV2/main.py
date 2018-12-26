@@ -49,9 +49,10 @@ if __name__ == "__main__":
     voca.dump_vocabulary('../model/%sSenLDAV2Vocabulary.txt' % category)
 
     np.random.shuffle(docs)
-    trainNum = int(len(docs)*0.9)
+    trainNum = int(len(docs) * 0.9)
     trainDocs = docs[:trainNum]
     testDocs = docs[trainNum:]
+
 
     st = datetime.now()
     iterations, scores = 250, []
