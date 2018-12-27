@@ -18,7 +18,7 @@ if __name__ == '__main__':
     # vocab.load_vocabulary('../model/ldaVocabulary.txt')
     category = 'food'
 
-    topicNum = 1000
+    topicNum = 300
     fh = io.open('../model/lda.%dtopics.pkl' % topicNum, 'rb')
     mDict = pickle.load(fh)
     lda = mDict['lda']

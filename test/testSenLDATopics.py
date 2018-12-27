@@ -7,7 +7,7 @@ from hanlpsegment import HanlpStandardTokenizer
 
 def getDocTopicFromWords(testDoc, n_z_t, vocab):
     stsTopics = []
-    n_z_t = n_z_t / np.sum(n_z_t, axis=0, keepdims=True)
+    n_z_t = n_z_t / (np.sum(n_z_t, axis=0, keepdims=True) + 1e-9)
     for sts in testDoc.split('，'):
         topicDist = np.zeros(n_z_t.shape[0])
         for word in vocab.segmentor.cut(sts):

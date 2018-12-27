@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     st = datetime.now()
     iterations, scores = 2500, []
-    topicNum = 1000
+    topicNum = 300
     lda = LDA(K=topicNum, alpha=50.0/topicNum, beta=0.01, docs=trainDocs, V=voca.size())
     perpl, cnt, ar, nmi, p, r, f = [], 0, [], [], [], [], []
 

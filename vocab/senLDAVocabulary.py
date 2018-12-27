@@ -51,3 +51,17 @@ class SenLDAVocabulary(Vocabulary):
             else:
                 m.append(x)
         return  np.array(m)
+
+    def convert_docs2id(self, docs):
+        docIds = []
+        for doc in docs:
+            stsIdList = []
+            for sts in doc:
+                ids = []
+                words = self.segmentor.cut(sts)
+                for word in words:
+                    if word in self.vocab2id:
+                        ids.append(self.vocab2id[word])
+                stsIdList.append(ids)
+            docIds.append(stsIdList)
+        return docIds

@@ -7,7 +7,7 @@ from testSenLDATopics import getDocTopicFromWords
 from tools.hanlpsegment import HanlpStandardTokenizer
 
 if __name__ == '__main__':
-    topicNum = 100
+    topicNum = 500
     fh = io.open('../model/senLDAV2.%dtopics.pkl' % topicNum, 'rb')
     mDict = pickle.load(fh)
     fh.close()
