@@ -149,7 +149,7 @@ class SenLDAV2(SenLDA):
             theta = self.n_m_s[m] / (len(doc) + self.SK * self.alpha)
             for sen in doc:
                 for w in sen:
-                    log_per -= np.log(np.dot(np.dot(theta, self.n_s_z / (self.SK + self.K * self.gamma)), phi[:, w]))
+                    log_per -= np.log(np.dot(np.dot(theta, self.n_s_z / (self.SK + self.K * self.gamma)), phi[:, w]) + 1e-9)
                 N += len(sen)
         return np.exp(log_per / N)
 
@@ -249,7 +249,16 @@ class SenLDAV2(SenLDA):
             theta = n_m_s[m] / (len(doc) + self.SK * self.alpha)
             for sen in doc:
                 for w in sen:
-                    log_per -= np.log(np.dot(np.dot(theta, self.n_s_z / (self.SK + self.K * self.gamma)), phi[:, w]))
+                    log_per -= np.log(np.dot(np.dot(theta, self.n_s_z / (self.SK + self.K * self.gamma)), phi[:, w]) + 1e-9)
                 N += len(sen)
         topicDist = n_m_z / n_m_z.sum(axis=1)[:, np.newaxis]
         return np.exp(log_per / N), topicDist
+
+
+    def dumpDocWordTopics(self, outpath, vocab):
+        with io.open(outpath, 'w+', encoding='utf-8') as fout:
+            for z_n, doc in zip(self.z_m_n, self.docs):
+                doc = [w for sublist in doc for w in sublist]
+                zs = [z for sublist in z_n for z in sublist]
+                line = ['%s:%d' % (vocab.vocabs[wordId], z) for z, wordId in zip(zs, doc)]
+                fout.write(' '.join(line) + '\n')

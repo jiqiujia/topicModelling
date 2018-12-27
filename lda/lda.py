@@ -151,7 +151,7 @@ class LDA:
             n_z_t = self.n_z_t
         if n_z is None:
             n_z = self.n_z
-        return n_z_t / n_z[:, np.newaxis]  #Normalize each line (lines are topics), with the number of words assigned to this topics to obtain probs.  *neaxis: Create an array of len = 1
+        return n_z_t / (n_z[:, np.newaxis] + 1e-9) #Normalize each line (lines are topics), with the number of words assigned to this topics to obtain probs.  *neaxis: Create an array of len = 1
 
     def dumpDocWordTopics(self, outpath, vocab):
         with io.open(outpath, 'w+', encoding='utf-8') as fout:

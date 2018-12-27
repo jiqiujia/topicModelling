@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from testSenTopics import getDocTopicFromWords
+from testSenLDATopics import getDocTopicFromWords
 from tools.utils import loadLDAModel
 from vocab.ldaVocabulary import LDAVocabulary
 import io

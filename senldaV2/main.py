@@ -55,9 +55,9 @@ if __name__ == "__main__":
 
 
     st = datetime.now()
-    iterations, scores = 250, []
-    stsTopicNum = 25
-    topicNum = 100
+    iterations, scores = 500, []
+    stsTopicNum = 50
+    topicNum = 500
     alpha = 0.6433 / stsTopicNum
     beta = 1.64*1e-4 * stsTopicNum + 1.4528713 / topicNum
     gamma = 5.276*1e-5 * stsTopicNum + 0.2156 / topicNum
@@ -88,7 +88,7 @@ if __name__ == "__main__":
             perpl.append(features[0])
 
             noImproveStepNum += 1
-            if noImproveStepNum>3:
+            if noImproveStepNum>100:
                 break
 
     dumpTopicWords('topicWords.txt', lda, voca, 15)
