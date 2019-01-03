@@ -57,7 +57,7 @@ if __name__ == "__main__":
     st = datetime.now()
     iterations, scores = 500, []
     stsTopicNum = 50
-    topicNum = 500
+    topicNum = 300
     alpha = 0.6433 / stsTopicNum
     beta = 1.64*1e-4 * stsTopicNum + 1.4528713 / topicNum
     gamma = 5.276*1e-5 * stsTopicNum + 0.2156 / topicNum
